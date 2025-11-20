@@ -1,6 +1,8 @@
 package org.vetronauta.testcontainers.karapace;
 
 import lombok.NonNull;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -82,31 +84,12 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
         return new Builder();
     }
 
-    //TODO use @With?
+    @Setter
+    @Accessors(fluent = true)
     public static class Builder {
-        DockerImageName karapaceImageName = DEFAULT_IMAGE_NAME;
+        @NonNull DockerImageName karapaceImageName = DEFAULT_IMAGE_NAME;
         KafkaContainer kafkaContainer;
         boolean assertCompatible = true;
-
-        public Builder karapaceImageName(@NonNull String karapaceImageName) {
-            this.karapaceImageName = DockerImageName.parse(karapaceImageName);
-            return this;
-        }
-
-        public Builder karapaceImageName(@NonNull DockerImageName karapaceImageName) {
-            this.karapaceImageName = karapaceImageName;
-            return this;
-        }
-
-        public Builder kafkaContainer(KafkaContainer kafkaContainer) {
-            this.kafkaContainer = kafkaContainer;
-            return this;
-        }
-
-        public Builder assertCompatible(boolean assertCompatible) {
-            this.assertCompatible = assertCompatible;
-            return this;
-        }
 
         public KarapaceContainer build() {
             return new KarapaceContainer(this);
