@@ -24,25 +24,17 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
     private final KafkaContainer kafkaContainer;
 
     static {
-        //TODO remove defaults
         Map<String, String> envMap = new HashMap<>();
         envMap.put("KARAPACE_KARAPACE_REGISTRY", "true");
         envMap.put("KARAPACE_ADVERTISED_HOSTNAME", "karapace-schema-registry");
-        envMap.put("KARAPACE_ADVERTISED_PROTOCOL", "http");
         envMap.put("KARAPACE_BOOTSTRAP_URI", "kafka:9093");
-        envMap.put("KARAPACE_PORT", "8081");
         envMap.put("KARAPACE_HOST", "0.0.0.0");
         envMap.put("KARAPACE_CLIENT_ID", "karapace-schema-registry-0");
         envMap.put("KARAPACE_GROUP_ID", "karapace-schema-registry");
         envMap.put("KARAPACE_MASTER_ELECTION_STRATEGY", "highest");
-        envMap.put("KARAPACE_MASTER_ELIGIBILITY", "true");
-        envMap.put("KARAPACE_TOPIC_NAME", "_schemas");
         envMap.put("KARAPACE_LOG_LEVEL", "INFO");
         envMap.put("KARAPACE_COMPATIBILITY", "FULL");
         envMap.put("KARAPACE_STATSD_HOST", "statsd-exporter");
-        envMap.put("KARAPACE_STATSD_PORT", "8125");
-        envMap.put("KARAPACE_KAFKA_SCHEMA_READER_STRICT_MODE", "false");
-        envMap.put("KARAPACE_KAFKA_RETRIABLE_ERRORS_SILENCED", "true");
         envMap.put("KARAPACE_TAGS__APP", "karapace-schema-registry");
         ENV_MAP = Collections.unmodifiableMap(envMap);
     }
@@ -93,7 +85,6 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
     //TODO use @With?
     public static class Builder {
         DockerImageName karapaceImageName = DEFAULT_IMAGE_NAME;
-        String karapaceTag;
         KafkaContainer kafkaContainer;
         boolean assertCompatible = true;
 
@@ -104,11 +95,6 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
 
         public Builder karapaceImageName(@NonNull DockerImageName karapaceImageName) {
             this.karapaceImageName = karapaceImageName;
-            return this;
-        }
-
-        public Builder karapaceTag(String karapaceTag) {
-            this.karapaceTag = karapaceTag;
             return this;
         }
 
@@ -123,10 +109,6 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
         }
 
         public KarapaceContainer build() {
-            if (karapaceTag != null) {
-                //TODO make sure that DEFAULT_IMAGE_NAME is immutable
-                karapaceImageName = karapaceImageName.withTag(karapaceTag);
-            }
             return new KarapaceContainer(this);
         }
 
