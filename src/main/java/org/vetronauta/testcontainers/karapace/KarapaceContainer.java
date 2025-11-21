@@ -70,6 +70,7 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
         setNetwork(this.kafkaContainer.getNetwork());
         setCommand("python3 -m karapace");
         setWaitStrategy(Wait.forHttp("/_health"));
+        //setWaitStrategy(Wait.forLogMessage(".*Ready in \\d+\\.\\d+ seconds.*", 2)); //TODO sometimes health endpoint is not sufficient
         ENV_MAP.forEach(this::addEnv);
     }
 
