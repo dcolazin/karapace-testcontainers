@@ -13,11 +13,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Testcontainers implementation of Karapace.
+ * <p>
+ * Supported images: {@code ghcr.io/iven-open/karapace}
+ * <p>
+ * Exposed ports: 8081
+ */
 public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
 
-    public static final DockerImageName DEFAULT_IMAGE_NAME = DockerImageName
+    public static final DockerImageName GHCR_IMAGE_NAME = DockerImageName
         .parse("aiven-open/karapace")
         .withRegistry("ghcr.io");
+    public static final DockerImageName DEFAULT_IMAGE_NAME = GHCR_IMAGE_NAME
+        .withTag("5.0.3");
     public static final int ORIGINAL_EXPOSED_PORT = 8081;
 
     private static final Map<String, String> ENV_MAP;
@@ -44,7 +53,7 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
     private KarapaceContainer(Builder builder) {
         super(builder.karapaceImageName);
         if (builder.assertCompatible) {
-            builder.karapaceImageName.assertCompatibleWith(DEFAULT_IMAGE_NAME);
+            builder.karapaceImageName.assertCompatibleWith(GHCR_IMAGE_NAME);
         }
         if (builder.kafkaContainer != null) {
             this.kafkaContainer = builder.kafkaContainer;

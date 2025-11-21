@@ -12,6 +12,10 @@ import java.net.http.HttpResponse;
 
 public class KarapaceContainerTest {
 
+    //TODO improve tests: write/read schemas
+    //TODO improve tests: multiple karapace instances
+    //TODO improve tests: test multiple versions of karapace/kafka
+
     @Test
     void startStopTest() throws URISyntaxException, IOException, InterruptedException {
         try (KarapaceContainer karapaceContainer = KarapaceContainer.builder().build();
