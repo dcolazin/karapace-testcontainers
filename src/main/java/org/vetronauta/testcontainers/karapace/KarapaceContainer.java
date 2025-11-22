@@ -16,7 +16,7 @@ import java.util.Map;
 /**
  * Testcontainers implementation of Karapace.
  * <p>
- * Supported images: {@code ghcr.io/iven-open/karapace}
+ * Supported images: {@code ghcr.io/aiven-open/karapace}
  * <p>
  * Exposed ports: 8081
  */

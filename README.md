@@ -40,7 +40,7 @@ KarapaceContainer customKarapaceContainer = KarapaceContainer.builder()
     .build();
 customKarapaceContainer.start();
 ```
-By default, the Kafka container lifecycle will follow the Karapace container lifecycle (it starts before and stops after karapace). 
+By default, the Kafka container lifecycle will follow the Karapace container lifecycle (it starts before and stops after Karapace). 
 There might be the need to use a specific Kafka version or to test a Karapace cluster.
 It is possible to supply a Kafka container to use, but its lifecycle must be handled separately. 
 
