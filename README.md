@@ -56,18 +56,23 @@ kafka4Container.stop();
 ```
 
 ```java
-KafkaContainer kafkaContainer = new KafkaContainer("apache/kafka:3.9.1");
+KafkaContainer kafkaContainer = defaultKafkaContainer();
 KarapaceContainer masterContainer = KarapaceContainer.builder()
     .kafkaContainer(kafkaContainer)
     .build();
 KarapaceContainer follower1Container = KarapaceContainer.builder()
+    .electionStrategy(ElectionStrategy.LOWEST)
+    .expectedMaster(false)
     .kafkaContainer(kafkaContainer)
-    .build()
-    .withEnv("KARAPACE_MASTER_ELECTION_STRATEGY", "lowest");
+    .advertisedName("karapace-schema-registry-follower1")
+    .build();
 KarapaceContainer follower2Container = KarapaceContainer.builder()
+    .electionStrategy(ElectionStrategy.LOWEST)
+    .expectedMaster(false)
     .kafkaContainer(kafkaContainer)
-    .build()
-    .withEnv("KARAPACE_MASTER_ELECTION_STRATEGY", "lowest");
+    .advertisedName("karapace-schema-registry-follower2")
+    .build();
+kafkaContainer.start();
 masterContainer.start();
 follower1Container.start();
 follower2Container.start();

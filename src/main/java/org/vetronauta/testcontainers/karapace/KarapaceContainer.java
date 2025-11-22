@@ -25,9 +25,9 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
     public static final DockerImageName GHCR_IMAGE_NAME = DockerImageName
         .parse("aiven-open/karapace")
         .withRegistry("ghcr.io");
-    public static final DockerImageName DEFAULT_IMAGE_NAME = GHCR_IMAGE_NAME
-        .withTag("5.0.3");
+    public static final DockerImageName DEFAULT_IMAGE_NAME = GHCR_IMAGE_NAME.withTag("5.0.3");
     public static final int ORIGINAL_EXPOSED_PORT = 8081;
+    public static final String DEFAULT_REGISTRY_NAME = "karapace-schema-registry";
 
     private static final Map<String, String> ENV_MAP;
 
@@ -37,16 +37,11 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
     static {
         Map<String, String> envMap = new HashMap<>();
         envMap.put("KARAPACE_KARAPACE_REGISTRY", "true");
-        envMap.put("KARAPACE_ADVERTISED_HOSTNAME", "karapace-schema-registry");
         envMap.put("KARAPACE_BOOTSTRAP_URI", "kafka:9093");
         envMap.put("KARAPACE_HOST", "0.0.0.0");
-        envMap.put("KARAPACE_CLIENT_ID", "karapace-schema-registry-0");
-        envMap.put("KARAPACE_GROUP_ID", "karapace-schema-registry");
-        envMap.put("KARAPACE_MASTER_ELECTION_STRATEGY", "highest");
         envMap.put("KARAPACE_LOG_LEVEL", "INFO");
         envMap.put("KARAPACE_COMPATIBILITY", "FULL");
-        envMap.put("KARAPACE_STATSD_HOST", "statsd-exporter");
-        envMap.put("KARAPACE_TAGS__APP", "karapace-schema-registry");
+        envMap.put("KARAPACE_GROUP_ID", DEFAULT_REGISTRY_NAME);
         ENV_MAP = Collections.unmodifiableMap(envMap);
     }
 
@@ -60,18 +55,24 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
             this.shouldTearDownKafka = false;
         } else {
             //3.9.0 is not the best to use https://issues.apache.org/jira/browse/KAFKA-18281
-            this.kafkaContainer = new KafkaContainer("apache/kafka:3.9.1")
-                .withNetworkAliases("kafka")
-                .withNetwork(Network.builder().driver("bridge").build());
+            this.kafkaContainer = defaultKafkaContainer();
             this.shouldTearDownKafka = true;
         }
         addExposedPort(ORIGINAL_EXPOSED_PORT);
         dependsOn(this.kafkaContainer);
         setNetwork(this.kafkaContainer.getNetwork());
         setCommand("python3 -m karapace");
-        setWaitStrategy(Wait.forHttp("/_health"));
-        //setWaitStrategy(Wait.forLogMessage(".*Ready in \\d+\\.\\d+ seconds.*", 2)); //TODO sometimes health endpoint is not sufficient
+        if (builder.expectedMaster) {
+            setWaitStrategy(Wait.forLogMessage(".*Ready in \\d+\\.\\d+ seconds.*", 2));
+        } else {
+            setWaitStrategy(Wait.forHttp("/_health"));
+        }
         ENV_MAP.forEach(this::addEnv);
+        addEnv("KARAPACE_MASTER_ELECTION_STRATEGY", builder.electionStrategy.getPropertyValue());
+        addEnv("KARAPACE_ADVERTISED_HOSTNAME", builder.advertisedName);
+        addEnv("KARAPACE_CLIENT_ID", builder.advertisedName);
+        addEnv("KARAPACE_TAGS__APP", builder.advertisedName);
+        withNetworkAliases(builder.advertisedName);
     }
 
     @Override
@@ -94,12 +95,23 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
         return new Builder();
     }
 
+    public static KafkaContainer defaultKafkaContainer() {
+        //TODO sometimes (when?) Karapace is not able to actually start and logs repeatedly; is this an issue with Kafka wait strategy?
+        // karapace.core.schema_reader	schema-reader	WARNING 	Topic does not yet exist.
+        return new KafkaContainer("apache/kafka:3.9.1")
+            .withNetworkAliases("kafka")
+            .withNetwork(Network.builder().driver("bridge").build());
+    }
+
     @Setter
     @Accessors(fluent = true)
     public static class Builder {
+        @NonNull String advertisedName = DEFAULT_REGISTRY_NAME;
         @NonNull DockerImageName karapaceImageName = DEFAULT_IMAGE_NAME;
         KafkaContainer kafkaContainer;
         boolean assertCompatible = true;
+        boolean expectedMaster = true;
+        @NonNull ElectionStrategy electionStrategy = ElectionStrategy.HIGHEST;
 
         public KarapaceContainer build() {
             return new KarapaceContainer(this);
