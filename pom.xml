@@ -4,7 +4,7 @@
 
     <groupId>org.vetronauta</groupId>
     <artifactId>karapace-testcontainers</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1-SNAPSHOT</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A Testcontainers 2 module for Karapace</description>
@@ -141,7 +141,7 @@
         <connection>scm:git:git://github.com/dcolazin/karapace-testcontainers.git</connection>
         <developerConnection>scm:git:ssh://github.com/dcolazin/karapace-testcontainers.git</developerConnection>
         <url>https://github.com/dcolazin/karapace-testcontainers/tree/master</url>
-      <tag>karapace-testcontainers-0.1.0</tag>
+      <tag>HEAD</tag>
   </scm>
 
 </project>
