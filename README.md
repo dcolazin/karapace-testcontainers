@@ -10,7 +10,7 @@ A [Testcontainers 2](https://www.testcontainers.org/) module for running [Karapa
 <dependency>
     <groupId>org.vetronauta</groupId>
     <artifactId>karapace-testcontainers</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0</version>
     <scope>test</scope>
 </dependency>
 ```
@@ -40,21 +40,24 @@ KarapaceContainer customKarapaceContainer = KarapaceContainer.builder()
     .build();
 customKarapaceContainer.start();
 ```
+
 By default, the Kafka container lifecycle will follow the Karapace container lifecycle (it starts before and stops after Karapace). 
-There might be the need to use a specific Kafka version or to test a Karapace cluster.
-It is possible to supply a Kafka container to use, but its lifecycle must be handled separately. 
+There might be the need to use a specific Kafka version or to test a Karapace cluster. 
+Moreover, also Redpanda is supported for the underlying storage.
 
 ```java
-KafkaContainer kafka4Container = new KafkaContainer("apache/kafka:4.1.1");
-KarapaceContainer karapaceContainer = KarapaceContainer.builder()
-    .kafkaContainer(kafka4Container)
+KarapaceContainer kafka4KarapaceContainer = KarapaceContainer.builder()
+    .redpandaImage(DockerImageName.parse("redpandadata/redpanda:v25.3.1"))
     .build();
-karapaceContainer.start(); //will also start kafkaContainer if not yet running
-/* ... */
-karapaceContainer.stop();
-kafka4Container.stop();
+kafka4KarapaceContainer.start();
+
+KarapaceContainer redpandaKarapaceContainer = KarapaceContainer.builder()
+    .kafkaImage(DockerImageName.parse("apache/kafka:4.1.1"))
+    .build();
+redpandaKarapaceContainer.start();
 ```
 
+It is possible to supply a Kafka container to use, but its lifecycle must be handled separately.
 ```java
 KafkaContainer kafkaContainer = defaultKafkaContainer();
 KarapaceContainer masterContainer = KarapaceContainer.builder()

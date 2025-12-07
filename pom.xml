@@ -4,7 +4,7 @@
 
     <groupId>org.vetronauta</groupId>
     <artifactId>karapace-testcontainers</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>A Testcontainers 2 module for Karapace</description>
