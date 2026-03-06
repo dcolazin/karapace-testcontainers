@@ -27,6 +27,7 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
         .parse("aiven-open/karapace")
         .withRegistry("ghcr.io");
     public static final DockerImageName DEFAULT_IMAGE_NAME = GHCR_IMAGE_NAME.withTag("5.0.3");
+    public static final DockerImageName DEFAULT_V4_IMAGE_NAME = GHCR_IMAGE_NAME.withTag("4.1.1");
     public static final int ORIGINAL_EXPOSED_PORT = 8081;
     public static final String DEFAULT_REGISTRY_NAME = "karapace-schema-registry";
 
@@ -69,7 +70,7 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
         addExposedPort(ORIGINAL_EXPOSED_PORT);
         dependsOn(this.storageContainer);
         setNetwork(this.storageContainer.getNetwork());
-        setCommand("python3 -m karapace");
+        setCommand(builder.command);
         if (builder.expectedMaster) {
             setWaitStrategy(Wait.forLogMessage(".*Ready in \\d+\\.\\d+ seconds.*", 2));
         } else {
@@ -110,6 +111,10 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
         }
     }
 
+    public static Builder builder(KarapaceVersion version) {
+        return new Builder(version);
+    }
+
     public static Builder builder() {
         return new Builder();
     }
@@ -120,17 +125,39 @@ public class KarapaceContainer extends GenericContainer<KarapaceContainer> {
         return StorageDefinition.KafkaStorageDefinition.defaultKafkaContainer(DockerImageName.parse("apache/kafka:3.9.1"));
     }
 
+    public static enum KarapaceVersion { V4, V5 }
+
     @Setter
     @Accessors(fluent = true)
     public static class Builder {
         @NonNull String advertisedName = DEFAULT_REGISTRY_NAME;
-        @NonNull DockerImageName karapaceImageName = DEFAULT_IMAGE_NAME;
+        @NonNull DockerImageName karapaceImageName;
 
         StorageDefinition<? extends GenericContainer<?>> storageDefinition;
 
         boolean assertCompatible = true;
         boolean expectedMaster = true;
         @NonNull ElectionStrategy electionStrategy = ElectionStrategy.HIGHEST;
+        @NonNull String command;
+
+        public Builder() {
+            this(KarapaceVersion.V5);
+        }
+
+        public Builder(KarapaceVersion version) {
+            switch (version) {
+                case V4:
+                    this.karapaceImageName = DEFAULT_V4_IMAGE_NAME;
+                    this.command = "bash /opt/karapace/start.sh registry";
+                    break;
+                case V5:
+                    this.karapaceImageName = DEFAULT_IMAGE_NAME;
+                    this.command = "python3 -m karapace";
+                    break;
+                default:
+                    throw new UnsupportedOperationException();
+            }
+        }
 
         public Builder kafkaImage(DockerImageName kafkaImage) {
             this.storageDefinition = new StorageDefinition.KafkaStorageDefinition(kafkaImage);
