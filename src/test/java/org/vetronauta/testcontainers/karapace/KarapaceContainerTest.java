@@ -3,6 +3,7 @@ package org.vetronauta.testcontainers.karapace;
 import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testng.Assert;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
@@ -18,9 +19,19 @@ public class KarapaceContainerTest {
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String SCHEMA_REGISTRY_CONTENT_TYPE = "application/vnd.schemaregistry.v1+json";
 
-    @Test
-    void startStopKafka3Test() throws URISyntaxException, IOException, InterruptedException {
-        try (KarapaceContainer karapaceContainer = KarapaceContainer.builder(KarapaceContainer.KarapaceVersion.V5)
+    @DataProvider(name = "versions")
+    static Object[][] versions() {
+        KarapaceContainer.KarapaceVersion[] vals = KarapaceContainer.KarapaceVersion.values();
+        Object[][] data = new Object[vals.length][1];
+        for (int i = 0; i < vals.length; i++) {
+            data[i][0] = vals[i];
+        }
+        return data;
+    }
+
+    @Test(dataProvider = "versions")
+    void startStopKafka3Test(KarapaceContainer.KarapaceVersion version) throws URISyntaxException, IOException, InterruptedException {
+        try (KarapaceContainer karapaceContainer = KarapaceContainer.builder(version)
             .build();
              HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build()) {
 
@@ -32,9 +43,9 @@ public class KarapaceContainerTest {
         }
     }
 
-    @Test
-    void startStopKafka4Test() throws URISyntaxException, IOException, InterruptedException {
-        try (KarapaceContainer karapaceContainer = KarapaceContainer.builder(KarapaceContainer.KarapaceVersion.V5)
+    @Test(dataProvider = "versions")
+    void startStopKafka4Test(KarapaceContainer.KarapaceVersion version) throws URISyntaxException, IOException, InterruptedException {
+        try (KarapaceContainer karapaceContainer = KarapaceContainer.builder(version)
                 .kafkaImage(DockerImageName.parse("apache/kafka:4.1.1")).build();
              HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build()) {
 
@@ -46,9 +57,9 @@ public class KarapaceContainerTest {
         }
     }
 
-    @Test
-    void startStopRedpandaTest() throws URISyntaxException, IOException, InterruptedException {
-        try (KarapaceContainer karapaceContainer = KarapaceContainer.builder(KarapaceContainer.KarapaceVersion.V5)
+    @Test(dataProvider = "versions")
+    void startStopRedpandaTest(KarapaceContainer.KarapaceVersion version) throws URISyntaxException, IOException, InterruptedException {
+        try (KarapaceContainer karapaceContainer = KarapaceContainer.builder(version)
             .redpandaImage(DockerImageName.parse("redpandadata/redpanda:v25.3.1")).build();
              HttpClient client = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build()) {
 
@@ -60,19 +71,19 @@ public class KarapaceContainerTest {
         }
     }
 
-    @Test
-    void masterFollowerTest() throws URISyntaxException, IOException, InterruptedException {
+    @Test(dataProvider = "versions")
+    void masterFollowerTest(KarapaceContainer.KarapaceVersion version) throws URISyntaxException, IOException, InterruptedException {
         try(KafkaContainer kafkaContainer = defaultKafkaContainer();
-            KarapaceContainer masterContainer = KarapaceContainer.builder(KarapaceContainer.KarapaceVersion.V5)
+            KarapaceContainer masterContainer = KarapaceContainer.builder(version)
                 .kafkaContainer(kafkaContainer)
                 .build();
-            KarapaceContainer follower1Container = KarapaceContainer.builder(KarapaceContainer.KarapaceVersion.V5)
+            KarapaceContainer follower1Container = KarapaceContainer.builder(version)
                 .electionStrategy(ElectionStrategy.LOWEST)
                 .expectedMaster(false)
                 .kafkaContainer(kafkaContainer)
                 .advertisedName("karapace-schema-registry-follower1")
                 .build();
-            KarapaceContainer follower2Container = KarapaceContainer.builder(KarapaceContainer.KarapaceVersion.V5)
+            KarapaceContainer follower2Container = KarapaceContainer.builder(version)
                 .electionStrategy(ElectionStrategy.LOWEST)
                 .expectedMaster(false)
                 .kafkaContainer(kafkaContainer)
