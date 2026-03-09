@@ -1,7 +1,7 @@
 karapace-testcontainers changelog
 ======================
 
-## 0.3.0 (xxxx-xx-xx)
+## 0.3.0 (2026-03-09)
 Added: support for Karapace 4.
 
 ## 0.2.0 (2025-12-07)
